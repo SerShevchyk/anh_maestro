@@ -1,0 +1,4 @@
+anh_maestro_form_css:
+  css:
+    theme:
+      css/approval.css: {}

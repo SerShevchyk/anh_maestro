@@ -1,0 +1,19 @@
+<?php
+
+use Drupal\Core\Field\BaseFieldDefinition;
+
+/**
+ * Add new field Process Status Complete UID to maestro_process_status
+ */
+function anh_maestro_update_8001() {
+  $storage_definition = BaseFieldDefinition::create('integer')
+    ->setInitialValue(0)
+    ->setLabel(t('Process Status Complete UID'));
+
+  \Drupal::entityDefinitionUpdateManager()
+    ->installFieldStorageDefinition('complete_uid', 'maestro_process_status', 'maestro_process_status', $storage_definition);
+
+  \Drupal::entityTypeManager()->clearCachedDefinitions();
+  \Drupal::service('entity.definition_update_manager')->applyUpdates();
+}
+

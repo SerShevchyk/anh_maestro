@@ -1,0 +1,31 @@
+<div class="grant-review-comments__container comments__container">
+  {% for k,comment in comments %}
+    <div class="abstract-review-comment">
+      <div class="grant-review-comment__title">Grant Peer Review #{{ k + 1 }}</div>
+      <div class="value__container">
+        <div class="label">Collaborative approaches :</div>
+        <div class="value">{{ comment["field_collaborative_approaches_value"] }}</div>
+      </div>
+      <div class="value__container">
+        <div class="label">Development relevance :</div>
+        <div class="value">{{ comment["field_development_relevance_value"] }}</div>
+      </div>
+      <div class="value__container">
+        <div class="label">Innovation :</div>
+        <div class="value">{{ comment["field_innovation_value"] }}</div>
+      </div>
+      <div class="value__container">
+        <div class="label">Scientific excellence and originality :</div>
+        <div class="value">{{ comment["field_scientific_excellence_value"] }}</div>
+      </div>
+      <div class="value__container">
+        <div class="label">Translational value :</div>
+        <div class="value">{{ comment["field_translational_value_value"] }}</div>
+      </div>
+      <div class="value__container">
+        <div class="label">Feedback :</div>
+        <div class="value">{{ comment["field_feedback_value"] }}</div>
+      </div>
+    </div>
+  {% endfor %}
+</div>

@@ -1,0 +1,9 @@
+name: ANH Maestro
+description: Provide custom functionality for Maestro module
+core: 8.x
+package: Custom
+type: module
+scripts:
+dependencies:
+  - maestro:maestro
+  - maestro:maestro_taskconsole

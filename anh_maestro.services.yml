@@ -1,0 +1,17 @@
+services:
+  anh_maestro.anh_invitation:
+    class: Drupal\anh_maestro\Services\ANHInvitation
+    arguments: ['@plugin.manager.mail', '@entity_type.manager']
+  anh_maestro.anh_grant_additional_documents_invitation:
+    class: Drupal\anh_maestro\Services\ANHGrantAdditionalDocumentsInvitation
+    arguments: ['@plugin.manager.mail', '@entity_type.manager']
+  anh_maestro.route_subscriber:
+    class: Drupal\anh_maestro\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+  anh_maestro.reviews_comments_build:
+    class: Drupal\anh_maestro\Services\ReviewsCommentsBuild
+    arguments: ['@entity_type.manager']
+  anh_maestro.maestro_helper:
+    class: Drupal\anh_maestro\Services\MaestroHelper
+    arguments: ['@entity_type.manager']

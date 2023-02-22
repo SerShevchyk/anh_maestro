@@ -1,0 +1,31 @@
+<div class="abstract-review-comments__container">
+  {% for k,comment in comments %}
+    <div class="abstract-review-comment">
+      <div class="abstract-review-comment__title">Review #{{ k + 1 }}</div>
+      <div class="relevance">
+        <div class="label">Relevance</div>
+        <div class="value">{{ comment["field_relevance_value"] }}</div>
+      </div>
+      <div class="relevance">
+        <div class="label">Scientific rigour</div>
+        <div class="value">{{ comment["field_scientific_rigour_value"] }}</div>
+      </div>
+      <div class="relevance">
+        <div class="label">Abstract Quality</div>
+        <div class="value">{{ comment["field_abstract_quality_value"] }}</div>
+      </div>
+      <div class="relevance">
+        <div class="label">Originality</div>
+        <div class="value">{{ comment["field_originality_value"] }}</div>
+      </div>
+      <div class="relevance">
+        <div class="label">Poster or oral presentation recommendation</div>
+        <div class="value">{{ comment["field_poster_presentation_value"] }}</div>
+      </div>
+      <div class="relevance">
+        <div class="label">Feedback</div>
+        <div class="value">{{ comment["field_feedback_value"] }}</div>
+      </div>
+    </div>
+  {% endfor %}
+</div>

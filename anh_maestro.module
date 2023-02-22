@@ -1,0 +1,383 @@
+<?php
+
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Url;
+use Drupal\maestro\Engine\MaestroEngine;
+use Drupal\user\Entity\User;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
+module_load_include('inc', 'anh_maestro', 'includes/academy_weekly_abstract_submission');
+module_load_include('inc', 'anh_maestro', 'includes/grant_concept_memo_submission');
+module_load_include('inc', 'anh_maestro', 'includes/fellowship_concept_memo_submission');
+module_load_include('inc', 'anh_maestro', 'includes/fellowship_batch_handlers');
+module_load_include('inc', 'anh_maestro', 'includes/academy_weekly_submission_batch_handlers');
+module_load_include('inc', 'anh_maestro', 'includes/grant_submission_batch_handlers');
+
+/**
+ * Implements hook_maestro_interactive_handlers
+ *
+ * @return array
+ * array of function names and help text that will be displayed
+ * in the edit task form under the handler field
+ */
+function anh_maestro_maestro_interactive_handlers() {
+  return [
+    'anh_maestro_academy_weekly_abstract_submission_staff_approve_start_form'  => t('Academy Week Abstract Submission Staff Approving Start'),
+    'anh_maestro_academy_weekly_abstract_submission_reviewer_approve_form'            => t('Academy Week Abstract Form Reviewer Approve'),
+    'anh_maestro_academy_weekly_abstract_submission_astaff_approve_finish_form' => t('Academy Week Abstract Form Staff Approve Finish'),
+    'anh_maestro_grant_concept_memo_submission_concept_note_review_form' => t('Grant Concept Memo Submission Concept Note Review'),
+    'anh_maestro_grant_concept_memo_submission_full_proposal_form_staff' => t('Grant Concept Memo Submission Full Proposal Staff'),
+    'anh_maestro_grant_concept_memo_submission_success_form' => t('Grant Concept Memo Submission Success'),
+    'anh_maestro_grant_peer_review_user_assigment' => t('Grant Peer Review User Assigment'),
+    'anh_maestro_fellowship_concept_memo_submission_staff_approving_form' => t('Fellowship Concept Memo Submission Staff Review'),
+    'anh_maestro_fellowship_final_review_form' => t('Fellowship Final Review'),
+  ];
+}
+
+/**
+ * Implements hook_maestro_maestro_batch_handlers
+ *
+ * @return array
+ * array of function names and help text that will be displayed
+ * in the edit task form under the handler field
+ */
+function anh_maestro_maestro_batch_handlers() {
+  return [
+    'anh_maestro_fellowship_reference_request_batch_handler' => t('Fellowship Reference Request Batch Handler'),
+    'anh_maestro_academy_weekly_additional_personal_information_batch_handler' => t('Academy Week Additional Personal Information Batch Handler'),
+    'anh_maestro_grant_eligibity_check_batch_handler' => t('Grant - Eligibity Check Batch Handler'),
+    'anh_maestro_grant_full_proposal_peer_review_validation_batch_handler' => t('Grant Full Proposal Peer Review Validation Batch Handler'),
+  ];
+}
+
+/**
+ * Implements hook_theme().
+ */
+function anh_maestro_theme($existing, $type, $theme, $path) {
+  $path = drupal_get_path('module', 'anh_maestro') . '/templates';
+  return [
+    'anh_maestro_abstract_review_comments' => array(
+      'variables' => [
+        'comments' => NULL,
+      ],
+      'path'      => $path,
+    ),
+    'anh_maestro_grant_peer_reviews' => array(
+      'variables' => [
+        'comments' => NULL,
+      ],
+      'path'      => $path,
+    ),
+    'academy_weekly_abstract_review' => array(
+      'render element' => 'form',
+    ),
+    'anh_maestro_grant_submission_page' => array(
+      'variables' => [
+        'title'       => NULL,
+        'description' => NULL,
+        'link'        => NULL,
+      ],
+      'path'      => $path,
+    ),
+    'anh_maestro_academy_weekly_bursary_page' => array(
+      'variables' => [
+        'title' => NULL,
+        'description' => NULL,
+        'link' => NULL
+      ],
+      'path'      => $path,
+    ),
+    'anh_maestro_fellowship_submission_page' => array(
+      'variables' => [
+        'title' => NULL,
+        'description' => NULL,
+        'link' => NULL
+      ],
+      'path'      => $path,
+    ),
+    'anh_maestro_academy_week_abstract_submission_page' => array(
+      'variables' => [
+        'title' => NULL,
+        'description' => NULL,
+        'image' => NULL,
+        'link' => NULL
+      ],
+      'path'      => $path,
+    ),
+    'anh_track' => [
+      'variables' => [
+        'title' => NULL,
+        'description' => NULL,
+        'track' => NULL,
+      ],
+      'path'      => $path,
+    ],
+  ];
+}
+
+/**
+ * Implements hook_form_alter
+ *
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param $form_id
+ */
+function anh_maestro_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if (isset($form['#webform_id']) && $form['#webform_id'] === 'academy_weekly_abstract') {
+    if ($form['elements']['first_step']['#title'] === 'First step') {
+      $form['elements']['first_step']['first_author_info']['first_author_title']['#title'] = t('First author: Title');
+      $form['elements']['first_step']['first_author_info']['first_author_first_name']['#title'] = t('First author: First name');
+      $form['elements']['first_step']['first_author_info']['first_author_middle_name']['#title'] = t('First author: Middle name');
+      $form['elements']['first_step']['first_author_info']['first_author_last_name']['#title'] = t('First author: Last name');
+      $form['elements']['first_step']['first_author_info']['first_author_affiliation']['#title'] = t('First author: Affiliation (organisation)');
+      $form['elements']['first_step']['first_author_info']['first_author_location']['#title'] = t('First author: Location (country)');
+      $form['elements']['first_step']['first_author_info']['first_author_email']['#title'] = t('First author: Email');
+
+      $form['elements']['first_step']['speaker_info']['speaker_title']['#title'] = t('Speaker: Title');
+      $form['elements']['first_step']['speaker_info']['speaker_first_name']['#title'] = t('Speaker: First name');
+      $form['elements']['first_step']['speaker_info']['speaker_middle_name']['#title'] = t('Speaker: Middle name');
+      $form['elements']['first_step']['speaker_info']['speaker_last_name']['#title'] = t('Speaker: Last name');
+      $form['elements']['first_step']['speaker_info']['speaker_affiliation']['#title'] = t('Speaker: Affiliation (organisation)');
+      $form['elements']['first_step']['speaker_info']['speaker_location']['#title'] = t('Speaker: Location (country)');
+      $form['elements']['first_step']['speaker_info']['speaker_email']['#title'] = t('Speaker: Email');
+    }
+
+    $form['elements']['first_step']['first_author_info']['first_author_title']['#empty_option'] = t('Choose');
+    $form['elements']['first_step']['speaker_info']['speaker_title']['#empty_option'] = t('Choose');
+  }
+  if (isset($form['#webform_id'])) {
+    if (isset($form["actions"]["preview_prev"]["#value"]) && $form["actions"]["preview_prev"]["#value"] == '< Previous') {
+      $form["actions"]["preview_prev"]["#value"] = t('Previous step');
+    }
+  }
+
+  $queueID = intval(\Drupal::request()->query->get('queueid', 0));
+  $isMaestro = intval(\Drupal::request()->query->get('maestro', 0));
+  // Both these keys need to exist.
+  if ($isMaestro && $queueID) {
+    $templateTask = MaestroEngine::getTemplateTaskByQueueID($queueID);
+    // We only care about Maestro Webform tasks.
+    if ($templateTask && $templateTask['tasktype'] == 'MaestroWebform') {
+      $storage = $form_state->getStorage();
+      if ($storage && array_key_exists('form_display', $storage)) {
+        $thisForm = $storage['form_display']->get('bundle');
+        $targetEntityType = $storage['form_display']->get('targetEntityType');
+        if ($isMaestro == 1 && $thisForm == "grant_full_proposal_submission" && $targetEntityType == 'webform_submission' && $templateTask['data']['webform_machine_name'] == $thisForm) {
+          $form['actions']['previous_step'] = [
+            '#type'       => 'html_tag',
+            '#tag'        => 'div',
+            '#title' => t('Previous Step'),
+            '#attributes' => ['class' => ['back__btn previous--aplication--btn']],
+            '#value'      => t("Previous Step")
+          ];
+        }
+        if ($thisForm == "grant_ipe_full_proposal_review") {
+          unset($form["elements"]["success"]);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_mail().
+ *
+ * @param $key
+ * @param $message
+ * @param $params
+ */
+function anh_maestro_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'send_invitation':
+      $message['from'] = \Drupal::config('system.site')->get('mail');
+      $message['subject'] = t('@title', ['@title' => $params['title']], ['langcode' => $message['langcode']]);
+      $message['body'][] = Html::escape($params['message']);
+      break;
+    case 'reject_task':
+      $message['from'] = \Drupal::config('system.site')->get('mail');
+      $message['subject'] = t('Request was rejected', ['langcode' => $message['langcode']]);
+      $message['body'][] = $params['message'];
+      break;
+  }
+}
+
+/**
+ * Implements hook_entity_base_field_info().
+ *
+ * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+ *
+ * @return mixed
+ */
+function anh_maestro_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->id() === 'maestro_process_status') {
+    $fields['complete_uid'] = BaseFieldDefinition::create('integer')
+      ->setInitialValue(0)
+      ->setLabel(t('Process Status Complete UID'));
+    return $fields;
+  }
+}
+
+/**
+ * Implements hook_maestro_post_production_assignments().
+ *
+ * @param $templateMachineName
+ * @param $taskID
+ * @param $queueID
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function anh_maestro_maestro_post_production_assignments($templateMachineName, $taskID, $queueID) {
+  $processID = MaestroEngine::getProcessIdFromQueueId($queueID);
+
+  if ($taskID == "grant_peer_review") {
+    $maestroRedirectUserID = MaestroEngine::getProcessVariable("grant_peer_review_user_assigment", $processID);
+    $user =  User::load($maestroRedirectUserID);
+    if ($user) {
+      $referenceName = $user->get("name")->value;
+
+      $values = [
+        'queue_id' => $queueID,
+        'assign_type' => "user",
+        'by_variable' => 0,
+        'assign_id' => $referenceName,
+        'process_variable' => 0,
+        'assign_back_id' => 0,
+        'task_completed' => 0,
+      ];
+      $prodAssignments = \Drupal::entityTypeManager()->getStorage('maestro_production_assignments')->create($values);
+      $prodAssignments->save();
+    }
+  }
+
+  if ($taskID == "grant_full_proposal_peer_review" || $taskID == "grant_full_proposal_peer_review_2") {
+    $query = \Drupal::entityTypeManager()
+      ->getStorage('maestro_production_assignments')
+      ->getQuery();
+    $query->condition('queue_id', $queueID);
+    $assignRecordId = array_shift($query->execute());
+
+    $assignRecord = \Drupal::entityTypeManager()
+      ->getStorage('maestro_production_assignments')
+      ->load($assignRecordId);
+
+    $maestroRedirectUserIDs = MaestroEngine::getProcessVariable("peer_review_stage_uids", $processID);
+
+    if (isset($maestroRedirectUserIDs) && !empty($maestroRedirectUserIDs)) {
+      $uids = explode("/", $maestroRedirectUserIDs);
+
+      $user = ($taskID == "grant_full_proposal_peer_review") ? User::load($uids[0]) : User::load($uids[1]);
+      if ($user) {
+        $referenceName = $user->get("name")->value;
+
+        $values = [
+          'queue_id' => $queueID,
+          'assign_type' => "user",
+          'by_variable' => 0,
+          'assign_id' => $referenceName,
+          'process_variable' => 0,
+          'assign_back_id' => 0,
+          'task_completed' => 0,
+        ];
+        $prodAssignments = \Drupal::entityTypeManager()->getStorage('maestro_production_assignments')->create($values);
+        $prodAssignments->save();
+      }
+    }
+  }
+  if ($taskID == "fellowship_reference_request_host" || $taskID == "fellowship_reference_request_home" || $taskID == "fellowship_reference_request_other") {
+    $sid = MaestroEngine::getEntityIdentiferByUniqueID($processID, 'fellowship_full_proposal_submission');
+    $webformSubmission = \Drupal::entityTypeManager()
+      ->getStorage('webform_submission')
+      ->load($sid);
+
+    if ($webformSubmission && !empty($webformSubmission)) {
+      $webformSubmissionData = $webformSubmission->getData();
+
+      switch ($taskID) {
+        case "fellowship_reference_request_host" :
+          $referenceEmails[] = $hostMentorEmail = $webformSubmissionData["email_address_host"];
+          break;
+        case "fellowship_reference_request_home" :
+          $referenceEmails[] = $homeMentorEmail = $webformSubmissionData["email_address_home"];
+          break;
+        case "fellowship_reference_request_other" :
+          $otherReferences = $webformSubmissionData["other_reference"];
+
+          foreach ($otherReferences as $item) {
+            if (isset($item["email_address_reference"]) && !empty($item["email_address_reference"])) {
+              $referenceEmails[] = $item["email_address_reference"];
+            }
+          }
+          break;
+      }
+
+      if (!empty($referenceEmails)) {
+        foreach ($referenceEmails as $referenceEmail) {
+          $users = \Drupal::entityTypeManager()->getStorage('user')
+            ->loadByProperties(['mail' => $referenceEmail]);
+          $user = reset($users);
+          if ($user) {
+            $referenceName = $user->get("name")->value;
+
+            $values = [
+              'queue_id' => $queueID,
+              'assign_type' => "user",
+              'by_variable' => 0,
+              'assign_id' => $referenceName,
+              'process_variable' => 0,
+              'assign_back_id' => 0,
+              'task_completed' => 0,
+            ];
+            $prodAssignments = \Drupal::entityTypeManager()->getStorage('maestro_production_assignments')->create($values);
+            $prodAssignments->save();
+          }
+          else {
+            MaestroEngine::archiveTask($queueID);
+          }
+        }
+      }
+    }
+    if ($taskID == "fellowship_reference_request_other") {
+//      \Drupal::messenger()->addMessage('Your Fellowship full proposal has been submitted. Test');
+      $response = new RedirectResponse(Url::fromRoute('<front>')->toString());
+      $response->send();
+    }
+  }
+}
+
+/**
+ * Implements hook_webform_type_task_submit().
+ *
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ */
+function anh_maestro_webform_type_task_submit(&$form, FormStateInterface $form_state) {
+  // We have hooked into the webform submission by explicitly telling the webform to execute
+  // this submission handler
+  // get the identifiers here for Maestro.
+  $maestroElements = $form_state->getValue('maestro');
+  if ($maestroElements) {
+    $queueID = $maestroElements['queue_id'];
+    $processID = $maestroElements['process_id'];
+    $webformType = $maestroElements['type'];
+    $templateTask = MaestroEngine::getTemplateTaskByQueueID($queueID);
+    if ($templateTask) {
+      $response = new TrustedRedirectResponse('/');
+      if (isset($templateTask['data']['redirect_to']) && $templateTask['data']['redirect_to'] != '') {
+        $response = new TrustedRedirectResponse('/' . $templateTask['data']['redirect_to']);
+        $form_state->setResponse($response);
+        $form_state->setRedirect(Url::fromUserInput('/' . $templateTask['data']['redirect_to']));
+      }
+      else {
+        $response = new TrustedRedirectResponse('/');
+        $form_state->setResponse($response);
+        $form_state->setRedirect(Url::fromUserInput('/'));
+      }
+    }
+  }
+}

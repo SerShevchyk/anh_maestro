@@ -1,0 +1,73 @@
+anh_maestro.webformsubmission:
+  path: '/anh-maestro-webform-submission/{webform_submission_id}'
+  defaults:
+    _controller: '\Drupal\anh_maestro\Controller\ANHMaestroWebformSubmission::render'
+    _title: 'Task Console'
+    highlightQueueID: '0'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+    parameters:
+      user:
+        type: entity:user
+anh_maestro.grant_submission:
+  path: '/grant-submission/{parentNode}'
+  defaults:
+    _controller: '\Drupal\anh_maestro\Controller\ANHGrantSubmissionPage::render'
+    _title: 'Grant Submission'
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      no_cache: TRUE
+      parentNode:
+        type: entity:node
+anh_maestro.grant_submission_confirm:
+  path: '/grant-submission-confirm/{grantPeerReviewComment}'
+  defaults:
+    _controller: '\Drupal\anh_maestro\Controller\ANHGrantSubmissionConfirmPage::render'
+    _title: 'Grant Submission Confirm'
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      no_cache: TRUE
+      parentNode:
+        type: entity:comment
+anh_maestro.fellowship:
+  path: '/fellowship-submission/{parentNode}'
+  defaults:
+    _controller: '\Drupal\anh_maestro\Controller\ANHFellowshipSubmissionPage::render'
+    _title: 'Fellowship Submission'
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      no_cache: TRUE
+      parentNode:
+        type: entity:node
+anh_maestro.academy_weekly_bursary:
+  path: '/bursary-application/{parentWebformSubmissionId}'
+  defaults:
+    _controller: '\Drupal\anh_maestro\Controller\AcademyWeeklyBursarySubmissionPage::render'
+    _title: 'Academy Week Bursary Submission'
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      no_cache: TRUE
+      parentNode:
+        type: entity:webform_submission
+anh_maestro.academy_weekly_abstract:
+  path: '/academy-week-abstract/{parentNode}'
+  defaults:
+    _controller: '\Drupal\anh_maestro\Controller\ANHAcademyWeekAbstractPage::render'
+    _title: 'Fellowship Submission'
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      no_cache: TRUE
+      parentNode:
+        type: entity:node
